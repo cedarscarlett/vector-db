@@ -1,7 +1,6 @@
 {
 "editor.hover.sticky": false,
   "python.analysis.extraPaths": [
-    "./codesem"
   ],
   "editor.wordWrap": "on",
   "editor.defaultFormatter": "ms-python.black-formatter",

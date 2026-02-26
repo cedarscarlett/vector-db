@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from codesem.indexing.hashing import hash_file, hash_text
+from codesem.utils.hashing import hash_file, hash_text
 from codesem.storage.vector_repository import CodeChunkRecord
 
 

@@ -1,6 +1,6 @@
 """Tests for line-based chunking logic with overlap."""
 
-from codesem.indexing.hashing import hash_text
+from codesem.utils.hashing import hash_text
 
 
 # NOTE:
