@@ -1,0 +1,30 @@
+[
+  {
+    "query": "How do we avoid re-embedding unchanged files?",
+    "expected_files": ["vector_repository.py"]
+  },
+  {
+    "query": "What happens when the OpenAI API is temporarily unavailable?",
+    "expected_files": ["openai_embedder.py"]
+  },
+  {
+    "query": "How do we prevent duplicate chunks from being inserted into the database?",
+    "expected_files": ["vector_repository.py"]
+  },
+  {
+    "query": "Where do we clean up data from files that were removed from the repo?",
+    "expected_files": ["vector_repository.py"]
+  },
+  {
+    "query": "How is hybrid scoring calculated from vector and keyword signals?",
+    "expected_files": ["hybrid_ranker.py"]
+  },
+  {
+    "query": "Where are embeddings generated?",
+    "expected_files": ["openai_embedder.py"]
+  },
+  {
+    "query": "Where is the benchmark runner defined?",
+    "expected_files": ["benchmark_runner.py"]
+  }
+]
