@@ -1,4 +1,4 @@
-# codesem/utils/logging.py
+"""Logging configuration for the CodeSem application."""
 
 from __future__ import annotations
 

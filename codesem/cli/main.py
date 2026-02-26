@@ -1,4 +1,4 @@
-# codesem/cli/main.py
+"""CLI entry point for CodeSem — semantic code search using pgvector."""
 from __future__ import annotations
 
 import json

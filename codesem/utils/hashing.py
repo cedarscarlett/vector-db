@@ -1,4 +1,4 @@
-# codesem/indexing/hashing.py
+"""SHA-256 content and file hashing for chunk deduplication."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-# tests/test_search.py
+"""Tests for hybrid ranking logic (pure, no DB/OpenAI dependencies)."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-# codesem/config/settings.py
+"""Centralized configuration loader for CodeSem, reading from environment variables."""
 
 from __future__ import annotations
 

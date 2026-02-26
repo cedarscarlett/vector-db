@@ -1,4 +1,4 @@
-# tests/test_indexing.py
+"""Tests for content hashing and CodeChunkRecord construction."""
 
 from __future__ import annotations
 

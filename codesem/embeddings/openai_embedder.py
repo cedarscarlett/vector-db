@@ -1,4 +1,4 @@
-# codesem/embeddings/openai_embedder.py
+"""OpenAI embedding client with batching and exponential backoff retry."""
 
 from __future__ import annotations
 

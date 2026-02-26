@@ -1,4 +1,4 @@
-# codesem/benchmarking/benchmark_runner.py
+"""Benchmark runner comparing semantic search recall against a grep baseline."""
 
 from __future__ import annotations
 

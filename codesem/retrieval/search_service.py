@@ -1,4 +1,4 @@
-# codesem/retrieval/search_service.py
+"""Semantic and hybrid code search orchestration."""
 
 from __future__ import annotations
 

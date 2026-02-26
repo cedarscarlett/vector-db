@@ -1,4 +1,4 @@
-# codesem/storage/vector_repository.py
+"""PostgreSQL + pgvector persistence layer for code chunk storage and search."""
 
 from __future__ import annotations
 

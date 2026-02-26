@@ -1,4 +1,4 @@
-# codesem/retrieval/hybrid_ranker.py
+"""Hybrid ranking combining vector similarity and keyword scoring."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-# tests/test_chunker.py
+"""Tests for line-based chunking logic with overlap."""
 
 from codesem.indexing.hashing import hash_text
 
