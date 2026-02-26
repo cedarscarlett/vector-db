@@ -578,6 +578,36 @@ def cmd_reset(
         raise typer.Exit(code=1)
 
 
+@app.command("migrate")
+def cmd_migrate(
+    debug: bool = typer.Option(
+        False,
+        "--debug",
+        help="Enable debug mode (do not suppress tracebacks).",
+    ),
+) -> None:
+    """
+    Run database migrations (create tables + indexes).
+    """
+    _require_env("DATABASE_URL")
+
+    try:
+        from codesem.storage.migrations import run_migrations  # type: ignore
+    except Exception as e:
+        _eprint("Migrations module not available yet (codesem.storage.migrations.run_migrations).")
+        _eprint(f"Import error: {e}")
+        raise typer.Exit(code=2)
+
+    try:
+        run_migrations()
+        typer.echo("Migrations completed successfully.")
+    except Exception as e:
+        if debug:
+            raise
+        _eprint(f"Migrations failed: {e}")
+        raise typer.Exit(code=1)
+
+
 def main() -> None:
     """
     Console entrypoint for `codesem`.
