@@ -2,12 +2,19 @@
 
 from __future__ import annotations
 
+import logging
 import math
 import re
 from dataclasses import dataclass
-from typing import Iterable, List, Sequence, Tuple
+from pathlib import Path
+from typing import Any, Iterable, List, Optional, Sequence, Tuple, Union
 
 from codesem.config.settings import get_settings
+
+_log = logging.getLogger(__name__)
+
+# Lazy-loaded model: None = not attempted, False = failed/missing, instance = loaded
+_MODEL: Union[Any, None, bool] = None
 
 
 # ============================================================
@@ -140,6 +147,21 @@ def min_max_normalize(values: Sequence[float]) -> List[float]:
 # ============================================================
 
 
+def _get_model() -> Any:
+    """Lazy-load the trained LearningRanker model, if available."""
+    global _MODEL
+    if _MODEL is None:
+        model_path = Path.cwd() / ".codesem_ranker.joblib"
+        try:
+            from codesem.ml.learning_ranker import LearningRanker
+            _MODEL = LearningRanker.load(str(model_path))
+            _log.info("Loaded LTR model from %s", model_path)
+        except Exception:
+            _log.debug("No LTR model loaded (path: %s), using static weights", model_path)
+            _MODEL = False
+    return _MODEL if _MODEL is not False else None
+
+
 def rank_hybrid(
     query: str,
     candidates: Iterable[HybridCandidate],
@@ -148,12 +170,7 @@ def rank_hybrid(
     """
     Perform hybrid ranking over vector candidates.
 
-    Steps:
-    - Tokenize query
-    - Compute keyword score per candidate
-    - Min-max normalize vector scores and keyword scores
-    - Combine using weighted sum
-    - Return top_k ranked results
+    Uses trained ML model if available, otherwise falls back to static weights.
     """
     settings = get_settings()
 
@@ -172,6 +189,42 @@ def rank_hybrid(
     vector_scores_norm = min_max_normalize(vector_scores)
     keyword_scores_norm = min_max_normalize(keyword_scores_raw)
 
+    # Try ML-based ranking
+    model = _get_model()
+    if model is not None:
+        try:
+            from codesem.ml.feature_extractor import build_feature_vector
+            import numpy as np
+
+            rows = [
+                build_feature_vector(vector_scores_norm[i], keyword_scores_norm[i], c.content)
+                for i, c in enumerate(candidate_list)
+            ]
+            X = np.vstack(rows)
+            probas = model.predict_proba(X)
+
+            scored = sorted(
+                zip(candidate_list, probas, keyword_scores_norm),
+                key=lambda x: x[1],
+                reverse=True,
+            )[:top_k]
+
+            return [
+                HybridResult(
+                    file_path=c.file_path,
+                    start_line=c.start_line,
+                    end_line=c.end_line,
+                    content=c.content,
+                    final_score=float(prob),
+                    vector_score=c.vector_score,
+                    keyword_score=kw,
+                )
+                for c, prob, kw in scored
+            ]
+        except Exception:
+            _log.warning("LTR prediction failed, falling back to static weights", exc_info=True)
+
+    # Static weighted fallback
     combined: List[Tuple[HybridCandidate, float, float]] = []
 
     for i, candidate in enumerate(candidate_list):

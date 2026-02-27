@@ -26,5 +26,89 @@
   {
     "query": "Where is the benchmark runner defined?",
     "expected_files": ["benchmark_runner.py"]
+  },
+  {
+    "query": "How does the system detect unchanged files during re-indexing?",
+    "expected_files": ["indexer.py", "hashing.py"]
+  },
+  {
+    "query": "How are source files split into smaller pieces for embedding?",
+    "expected_files": ["chunker.py"]
+  },
+  {
+    "query": "What directories are excluded by default when scanning a repository?",
+    "expected_files": ["file_scanner.py"]
+  },
+  {
+    "query": "How does the system handle rate limiting from the embedding provider?",
+    "expected_files": ["openai_embedder.py"]
+  },
+  {
+    "query": "Where is the database schema defined and what tables exist?",
+    "expected_files": ["schema.sql"]
+  },
+  {
+    "query": "How does cosine similarity search work in the storage layer?",
+    "expected_files": ["vector_repository.py"]
+  },
+  {
+    "query": "How are stop words handled during query tokenization?",
+    "expected_files": ["hybrid_ranker.py"]
+  },
+  {
+    "query": "Where are configuration defaults loaded and validated?",
+    "expected_files": ["settings.py"]
+  },
+  {
+    "query": "How does the CLI enforce return type contracts from backend modules?",
+    "expected_files": ["main.py"]
+  },
+  {
+    "query": "How does the system compute content hashes for deduplication?",
+    "expected_files": ["hashing.py"]
+  },
+  {
+    "query": "How does the sliding window chunking algorithm determine line boundaries?",
+    "expected_files": ["chunker.py"]
+  },
+  {
+    "query": "How does the search service decide between vector-only and hybrid mode?",
+    "expected_files": ["search_service.py"]
+  },
+  {
+    "query": "How does the benchmark compare semantic search recall against grep?",
+    "expected_files": ["benchmark_runner.py"]
+  },
+  {
+    "query": "What file extensions are included by default during indexing?",
+    "expected_files": ["settings.py", "file_scanner.py"]
+  },
+  {
+    "query": "How does the system handle exponential backoff when retrying API calls?",
+    "expected_files": ["openai_embedder.py"]
+  },
+  {
+    "query": "Where is the vector similarity index configured for the database?",
+    "expected_files": ["schema.sql"]
+  },
+  {
+    "query": "How does the system normalize scores to a zero-to-one range?",
+    "expected_files": ["hybrid_ranker.py"]
+  },
+  {
+    "query": "How are database migrations applied when setting up the system?",
+    "expected_files": ["migrations.py"]
+  },
+  {
+    "query": "Where does the CLI parse and validate user-provided repository paths?",
+    "expected_files": ["main.py"]
+  },
+  {
+    "query": "How does the embedding batching work to handle large numbers of chunks?",
+    "expected_files": ["openai_embedder.py", "indexer.py"]
+  },
+  {
+    "query": "How does the system log events and configure logging levels?",
+    "expected_files": ["logging.py"]
   }
 ]

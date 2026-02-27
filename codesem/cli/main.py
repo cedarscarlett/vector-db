@@ -543,6 +543,127 @@ def cmd_benchmark(
         raise typer.Exit(code=1)
 
 
+@app.command("train-ranker")
+def cmd_train_ranker(
+    queries_path: Path = typer.Option(
+        Path("codesem/benchmarking/queries.json"),
+        "--queries",
+        help="Path to benchmark queries JSON.",
+    ),
+    top_k: int = typer.Option(5, "--k", min=1, help="Top-k for candidate retrieval."),
+    model_out: str = typer.Option(
+        ".codesem_ranker.joblib",
+        "--model-out",
+        help="Output path for trained model.",
+    ),
+    debug: bool = typer.Option(
+        False,
+        "--debug",
+        help="Enable debug mode (do not suppress tracebacks).",
+    ),
+) -> None:
+    """
+    Train a learning-to-rank model from benchmark queries.
+    """
+    _require_env("DATABASE_URL")
+    _require_env("OPENAI_API_KEY")
+
+    if not queries_path.exists():
+        raise typer.BadParameter(f"Queries file not found: {queries_path}")
+
+    try:
+        from codesem.embeddings.openai_embedder import OpenAIEmbedder  # type: ignore
+        from codesem.storage.vector_repository import VectorRepository  # type: ignore
+        from codesem.retrieval.hybrid_ranker import HybridCandidate  # type: ignore
+        from codesem.ml.feature_extractor import extract_dataset  # type: ignore
+        from codesem.ml.learning_ranker import LearningRanker  # type: ignore
+        from codesem.ml.evaluation import cross_validate  # type: ignore
+    except Exception as e:
+        _eprint(f"Import error: {e}")
+        raise typer.Exit(code=2)
+
+    try:
+        import numpy as np
+
+        with open(queries_path, "r", encoding="utf-8") as f:
+            queries = json.load(f)
+
+        embedder = OpenAIEmbedder()
+        all_X: List[Any] = []
+        all_y: List[Any] = []
+
+        with VectorRepository() as repo:
+            for entry in queries:
+                query_text = entry["query"]
+                expected = set(entry["expected_files"])
+
+                query_embedding = embedder.embed_text(query_text)
+                hits = repo.search(
+                    query_embedding=query_embedding,
+                    top_k=top_k * 3,
+                )
+
+                if not hits:
+                    continue
+
+                candidates = [
+                    HybridCandidate(
+                        file_path=h.file_path,
+                        start_line=h.start_line,
+                        end_line=h.end_line,
+                        content=h.content,
+                        vector_score=h.similarity,
+                    )
+                    for h in hits
+                ]
+
+                X_q, y_q = extract_dataset(query_text, candidates, expected)
+                all_X.append(X_q)
+                all_y.append(y_q)
+
+        if not all_X:
+            _eprint("No training data collected. Is the repo indexed?")
+            raise typer.Exit(code=1)
+
+        X = np.vstack(all_X)
+        y = np.concatenate(all_y)
+
+        ranker = LearningRanker()
+        metadata = ranker.train(X, y)
+
+        cv_results = cross_validate(X, y)
+
+        ranker.save(model_out, metadata)
+
+        typer.echo(f"Samples: {metadata['n_samples']}")
+        typer.echo(f"Positives: {metadata['n_positive']}")
+        mean_auc = cv_results.get("mean_auc")
+        std_auc = cv_results.get("std_auc")
+
+        if mean_auc is None:
+            typer.echo("AUC: skipped (insufficient positive samples)")
+        else:
+            typer.echo(
+                f"AUC: {mean_auc:.4f} "
+                f"\u00b1 {std_auc:.4f}"
+            )
+
+        typer.echo(f"Folds: {cv_results.get('n_folds', 0)}")
+
+        if cv_results.get("warning"):
+            typer.echo(f"Warning: {cv_results['warning']}")
+
+        typer.echo(f"Model saved to: {model_out}")
+
+    except typer.Exit:
+        raise
+    except Exception as e:
+        if debug:
+            raise
+        _eprint(f"Training failed: {e}")
+        raise typer.Exit(code=1)
+
+
 @app.command("reset")
 def cmd_reset(
     yes: bool = typer.Option(False, "--yes", "-y", help="Confirm destructive reset."),
